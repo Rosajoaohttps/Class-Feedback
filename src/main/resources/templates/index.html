@@ -1,10 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Sistema de FeedBack</title>
+    <meta charset="UTF-8" />
+    <title>FeedbackAI Dashboard</title>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Estilos básicos -->
+    <style>
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            margin: 0;
+            background: #f5f7fb;
+            color: #333;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #fff;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-left img {
+            width: 36px;
+        }
+
+        .menu {
+            display: flex;
+            gap: 20px;
+            font-size: 15px;
+            color: #444;
+        }
+
+        /* PAGE CONTENT */
+        .container {
+            padding: 25px 40px;
+        }
+
+        h2 {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.04);
+            margin-bottom: 25px;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .input-box {
+            width: 100%;
+            min-height: 70px;
+            border-radius: 10px;
+            border: 1px solid #dcdcdc;
+            padding: 12px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .email-input {
+            border-radius: 10px;
+            border: 1px solid #dcdcdc;
+            padding: 12px;
+            width: 250px;
+        }
+
+        .btn {
+            background: #6a8cff;
+            color: white;
+            padding: 12px 26px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #5875e6;
+        }
+
+        /* Sentiment bars */
+        .bar {
+            height: 8px;
+            background: #000;
+            border-radius: 5px;
+            margin: 4px 0 15px 0;
+        }
+
+        /* FEEDBACK LIST */
+        .feedback-item {
+            background: #f7f9ff;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chip {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .positive {
+            background: #c8f7d2;
+            color: #1b8a39;
+        }
+
+        .neutral {
+            background: #e5e7eb;
+            color: #444;
+        }
+    </style>
 </head>
+
 <body>
+
+<div id="app">
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-left">
+            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712101.png" />
+            <div>
+                <strong>FeedbackAI</strong><br>
+                <small>Management System</small>
+            </div>
+        </div>
+
+        <div class="menu">
+            <span>Feedback</span>
+            <span>Analytics</span>
+            <span>Settings</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+
+        <h2>AI Feedback Dashboard</h2>
+        <div class="subtitle">Intelligent feedback management powered by advanced AI analytics</div>
+
+        <!-- Submit Feedback Card -->
+        <div class="card">
+            <h3>Submit Feedback</h3>
+            <p>Share your thoughts and our AI will analyze sentiment</p>
+
+            <textarea class="input-box" v-model="inputText" placeholder="Tell us what you think..."></textarea>
+
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <input type="email" class="email-input" v-model="email" placeholder="Email (optional)">
+                <button class="btn" @click="submitFeedback">Submit</button>
+            </div>
+        </div>
+
+
+        <!-- INSIGHTS + FEEDBACK LIST -->
+        <div class="row">
+
+            <!-- Sentiment Analysis card -->
+            <div class="card" style="flex: 1;">
+                <h3>AI Insights & Sentiment</h3>
+                <p>Real-time analysis of feedback patterns</p>
+
+                <p><strong>Sentiment Distribution</strong></p>
+
+                <div>Positive ({{ sentiments.positive }}%)</div>
+                <div class="bar" :style="{width: sentiments.positive + '%'}"></div>
+
+                <div>Neutral ({{ sentiments.neutral }}%)</div>
+                <div class="bar" :style="{width: sentiments.neutral + '%'}"></div>
+
+                <div>Negative ({{ sentiments.negative }}%)</div>
+                <div class="bar" :style="{width: sentiments.negative + '%'}"></div>
+            </div>
+
+            <!-- Recent Feedback card -->
+            <div class="card" style="flex: 1;">
+                <h3>Recent Feedback</h3>
+                <p>Latest submissions with AI sentiment</p>
+
+                <div v-for="f in feedbackList" :key="f.id" class="feedback-item">
+                    <div class="feedback-header">
+                        <strong>{{ f.user }}</strong>
+                        <span class="chip"
+                              :class="f.sentiment">
+                              {{ f.sentiment }}
+                        </span>
+                    </div>
+                    <div>{{ f.text }}</div>
+                    <small>{{ f.time }}</small>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                inputText: "",
+                email: "",
+                feedbackList: [
+                    {
+                        id: 1,
+                        user: "User A",
+                        text: "The new interface is incredibly intuitive!",
+                        sentiment: "positive",
+                        time: "2h ago"
+                    },
+                    {
+                        id: 2,
+                        user: "User B",
+                        text: "It's okay, but I'd like more theme options.",
+                        sentiment: "neutral",
+                        time: "5h ago"
+                    }
+                ],
+                sentiments: {
+                    positive: 68,
+                    neutral: 22,
+                    negative: 10
+                }
+            };
+        },
+
+        methods: {
+            submitFeedback() {
+                if (!this.inputText.trim()) return alert("Please write some feedback.");
+
+                this.feedbackList.unshift({
+                    id: Date.now(),
+                    user: this.email || "Anonymous",
+                    text: this.inputText,
+                    sentiment: this.randomSentiment(),
+                    time: "Just now"
+                });
+
+                this.inputText = "";
+                this.email = "";
+            },
+
+            randomSentiment() {
+                const arr = ["positive", "neutral", "negative"];
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+        }
+    }).mount("#app");
+</script>
 
 </body>
 </html>
