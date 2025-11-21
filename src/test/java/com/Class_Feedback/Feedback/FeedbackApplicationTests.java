@@ -1,10 +1,10 @@
-package SpringAi.ClassFeedback;
+package com.Class_Feedback.Feedback;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ClassFeedbackApplicationTests {
+class FeedbackApplicationTests {
 
 	@Test
 	void contextLoads() {

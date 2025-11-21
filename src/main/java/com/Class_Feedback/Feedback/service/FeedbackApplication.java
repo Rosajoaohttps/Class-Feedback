@@ -1,13 +1,13 @@
-package SpringAi.ClassFeedback;
+package com.Class_Feedback.Feedback.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ClassFeedbackApplication {
+public class FeedbackApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ClassFeedbackApplication.class, args);
+		SpringApplication.run(FeedbackApplication.class, args);
 	}
 
 }
