@@ -1,4 +1,4 @@
-package com.Class_Feedback.Feedback.service;
+package com.Class_Feedback.Feedback;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
