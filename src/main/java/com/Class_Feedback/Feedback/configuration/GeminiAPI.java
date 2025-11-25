@@ -1,14 +1,24 @@
 package com.Class_Feedback.Feedback.configuration;
 
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class GeminiAPI {
 
-    @Value("${gemini.api.key}")
+    @Value("${spring.ai.google.genai.api-key}")
     private String apiKey;
 
-    public String getKey() {
+    @Bean
+    public ChatClient chatClient(@Autowired ChatModel chatModel) {
+        return ChatClient.builder(chatModel).build();
+    }
+
+    public String getApiKey() {
         return apiKey;
     }
 }

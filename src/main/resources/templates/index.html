@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
-    <title>FeedbackAI Dashboard</title>
+    <title>FeedbackAI - Painel de Controle</title>
 
     <!-- Vue 3 CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -141,6 +141,11 @@
             background: #e5e7eb;
             color: #444;
         }
+
+        .negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 
@@ -154,33 +159,35 @@
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712101.png" />
             <div>
                 <strong>FeedbackAI</strong><br>
-                <small>Management System</small>
+                <small>Sistema de Gerenciamento</small>
             </div>
         </div>
 
         <div class="menu">
-            <span>Feedback</span>
-            <span>Analytics</span>
-            <span>Settings</span>
+            <span>Feedbacks</span>
+            <span>Análises</span>
+            <span>Configurações</span>
         </div>
     </div>
 
     <!-- MAIN CONTENT -->
     <div class="container">
 
-        <h2>AI Feedback Dashboard</h2>
-        <div class="subtitle">Intelligent feedback management powered by advanced AI analytics</div>
+        <h2>Painel de Feedbacks com IA</h2>
+        <div class="subtitle">Gerenciamento inteligente de feedbacks com análise avançada de IA</div>
 
-        <!-- Submit Feedback Card -->
+        <!-- Card de Envio de Feedback -->
         <div class="card">
-            <h3>Submit Feedback</h3>
-            <p>Share your thoughts and our AI will analyze sentiment</p>
+            <h3>Enviar Feedback</h3>
+            <p>Compartilhe seus pensamentos e nossa IA analisará o sentimento</p>
 
-            <textarea class="input-box" v-model="inputText" placeholder="Tell us what you think..."></textarea>
+            <textarea class="input-box" v-model="inputText" placeholder="Conte-nos o que você pensa..."></textarea>
 
             <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <input type="email" class="email-input" v-model="email" placeholder="Email (optional)">
-                <button class="btn" @click="submitFeedback">Submit</button>
+                <input type="email" class="email-input" v-model="email" placeholder="Email (opcional)">
+                <button class="btn" @click="submitFeedback" :disabled="loading">
+                    {{ loading ? 'Processando...' : 'Enviar' }}
+                </button>
             </div>
         </div>
 
@@ -188,34 +195,34 @@
         <!-- INSIGHTS + FEEDBACK LIST -->
         <div class="row">
 
-            <!-- Sentiment Analysis card -->
+            <!-- Card de Análise de Sentimento -->
             <div class="card" style="flex: 1;">
-                <h3>AI Insights & Sentiment</h3>
-                <p>Real-time analysis of feedback patterns</p>
+                <h3>Insights de IA e Sentimentos</h3>
+                <p>Análise em tempo real dos padrões de feedback</p>
 
-                <p><strong>Sentiment Distribution</strong></p>
+                <p><strong>Distribuição de Sentimentos</strong></p>
 
-                <div>Positive ({{ sentiments.positive }}%)</div>
+                <div>Positivo ({{ sentiments.positive }}%)</div>
                 <div class="bar" :style="{width: sentiments.positive + '%'}"></div>
 
-                <div>Neutral ({{ sentiments.neutral }}%)</div>
+                <div>Neutro ({{ sentiments.neutral }}%)</div>
                 <div class="bar" :style="{width: sentiments.neutral + '%'}"></div>
 
-                <div>Negative ({{ sentiments.negative }}%)</div>
+                <div>Negativo ({{ sentiments.negative }}%)</div>
                 <div class="bar" :style="{width: sentiments.negative + '%'}"></div>
             </div>
 
-            <!-- Recent Feedback card -->
+            <!-- Card de Feedbacks Recentes -->
             <div class="card" style="flex: 1;">
-                <h3>Recent Feedback</h3>
-                <p>Latest submissions with AI sentiment</p>
+                <h3>Feedbacks Recentes</h3>
+                <p>Últimas submissões com análise de sentimento por IA</p>
 
                 <div v-for="f in feedbackList" :key="f.id" class="feedback-item">
                     <div class="feedback-header">
                         <strong>{{ f.user }}</strong>
                         <span class="chip"
                               :class="f.sentiment">
-                              {{ f.sentiment }}
+                              {{ traduzirSentimento(f.sentiment) }}
                         </span>
                     </div>
                     <div>{{ f.text }}</div>
@@ -238,49 +245,93 @@
             return {
                 inputText: "",
                 email: "",
-                feedbackList: [
-                    {
-                        id: 1,
-                        user: "User A",
-                        text: "The new interface is incredibly intuitive!",
-                        sentiment: "positive",
-                        time: "2h ago"
-                    },
-                    {
-                        id: 2,
-                        user: "User B",
-                        text: "It's okay, but I'd like more theme options.",
-                        sentiment: "neutral",
-                        time: "5h ago"
-                    }
-                ],
+                feedbackList: [],
                 sentiments: {
-                    positive: 68,
-                    neutral: 22,
-                    negative: 10
-                }
+                    positive: 0,
+                    neutral: 0,
+                    negative: 0
+                },
+                loading: false
             };
         },
 
+        mounted() {
+            this.loadFeedbacks();
+            this.loadStats();
+        },
+
         methods: {
-            submitFeedback() {
-                if (!this.inputText.trim()) return alert("Please write some feedback.");
+            async submitFeedback() {
+                if (!this.inputText.trim()) {
+                    alert("Por favor, escreva algum feedback.");
+                    return;
+                }
 
-                this.feedbackList.unshift({
-                    id: Date.now(),
-                    user: this.email || "Anonymous",
-                    text: this.inputText,
-                    sentiment: this.randomSentiment(),
-                    time: "Just now"
-                });
+                this.loading = true;
 
-                this.inputText = "";
-                this.email = "";
+                try {
+                    const response = await fetch("/api/feedback", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            text: this.inputText,
+                            email: this.email || null
+                        })
+                    });
+
+                    if (response.ok) {
+                        const newFeedback = await response.json();
+                        this.feedbackList.unshift(newFeedback);
+                        this.inputText = "";
+                        this.email = "";
+                        this.loadStats(); // Atualizar estatísticas
+                    } else {
+                        alert("Erro ao enviar feedback. Por favor, tente novamente.");
+                    }
+                } catch (error) {
+                    console.error("Erro:", error);
+                    alert("Erro ao enviar feedback. Por favor, tente novamente.");
+                } finally {
+                    this.loading = false;
+                }
             },
 
-            randomSentiment() {
-                const arr = ["positive", "neutral", "negative"];
-                return arr[Math.floor(Math.random() * arr.length)];
+            traduzirSentimento(sentiment) {
+                const traducoes = {
+                    'positive': 'Positivo',
+                    'negative': 'Negativo',
+                    'neutral': 'Neutro'
+                };
+                return traducoes[sentiment] || sentiment;
+            },
+
+            async loadFeedbacks() {
+                try {
+                    const response = await fetch("/api/feedback");
+                    if (response.ok) {
+                        this.feedbackList = await response.json();
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar feedbacks:", error);
+                }
+            },
+
+            async loadStats() {
+                try {
+                    const response = await fetch("/api/stats");
+                    if (response.ok) {
+                        const stats = await response.json();
+                        this.sentiments = {
+                            positive: stats.positivePercent || 0,
+                            neutral: stats.neutralPercent || 0,
+                            negative: stats.negativePercent || 0
+                        };
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar estatísticas:", error);
+                }
             }
         }
     }).mount("#app");
