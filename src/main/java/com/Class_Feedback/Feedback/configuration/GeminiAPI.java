@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GeminiAPI {
 
-    @Value("${insira sua chave aqui}")
+    @Value("${spring.ai.google.genai.api-key}")
     private String apiKey;
 
     @Bean

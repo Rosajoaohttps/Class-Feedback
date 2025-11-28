@@ -17,10 +17,10 @@ public class ClassificarFeedBack {
             return "neutral";
         }
 
-        // Primeiro, tentar análise local rápida antes de chamar a API
+
         String textoLower = texto.toLowerCase().trim();
         
-        // Palavras-chave positivas (sem negação)
+
         String[] palavrasPositivas = {
             "adorei", "gostei muito", "excelente", "ótimo", "perfeito", "satisfeito", 
             "feliz", "recomendo", "maravilhoso", "incrível", "fantástico", "amazing",
@@ -28,7 +28,7 @@ public class ClassificarFeedBack {
             "superou", "surpreendeu", "impressionou", "encantou"
         };
         
-        // Palavras-chave negativas (incluindo negações)
+
         String[] palavrasNegativas = {
             "não gostei", "não recomendo", "não curti", "não achei", "não foi",
             "péssimo", "ruim", "terrível", "horrível", "odeio", "detesto", "insatisfeito",
@@ -37,10 +37,10 @@ public class ClassificarFeedBack {
             "lixo", "porcaria", "desperdício", "perda de tempo", "não vale", "não serve"
         };
         
-        // Palavras de negação
+
         String[] negacoes = {"não", "nao", "nunca", "jamais", "nem", "nada", "ninguém", "no", "not", "never"};
         
-        // Verificar se há negações antes de palavras positivas
+
         boolean temNegacao = false;
         for (String negacao : negacoes) {
             if (textoLower.contains(negacao)) {
@@ -49,7 +49,7 @@ public class ClassificarFeedBack {
             }
         }
         
-        // Se tem negação, verificar contexto mais cuidadosamente
+
         if (temNegacao) {
             // Verificar padrões de negação + palavra positiva (ex: "não gostei", "não recomendo")
             for (String negativa : palavrasNegativas) {
@@ -60,10 +60,10 @@ public class ClassificarFeedBack {
                 }
             }
             
-            // Se tem negação mas não encontrou padrão negativo conhecido, usar IA para contexto
+
             System.out.println("⚠️ Negação detectada, mas contexto ambíguo. Usando IA para análise contextual...");
         } else {
-            // Sem negação, verificar palavras positivas normalmente
+
             for (String palavra : palavrasPositivas) {
                 if (textoLower.contains(palavra)) {
                     System.out.println("✓ Classificado como POSITIVE (análise local - palavra: " + palavra + ")");
@@ -73,7 +73,7 @@ public class ClassificarFeedBack {
             }
         }
         
-        // Verificar palavras negativas (sempre, independente de negação)
+
         for (String palavra : palavrasNegativas) {
             if (textoLower.contains(palavra)) {
                 System.out.println("✓ Classificado como NEGATIVE (análise local - palavra: " + palavra + ")");
@@ -82,7 +82,7 @@ public class ClassificarFeedBack {
             }
         }
 
-        // Se não encontrou palavras-chave, usar Gemini AI
+
         System.out.println("\n🤖 CHAMANDO GEMINI AI para análise...");
         System.out.println("   Feedback: " + texto);
         String prompt = String.format(
@@ -115,7 +115,7 @@ public class ClassificarFeedBack {
             System.out.println("   ✅ Resposta recebida da IA em " + tempo + "ms");
             System.out.println("   📝 Resposta bruta da IA: [" + resposta + "]");
             
-            // Processar resposta de forma mais robusta
+
             String sentimento = processarRespostaGemini(resposta);
             
             System.out.println("   🎯 Classificação final pela IA: " + sentimento.toUpperCase());
@@ -129,7 +129,7 @@ public class ClassificarFeedBack {
             System.err.println("   Usando fallback (análise básica)...");
             e.printStackTrace();
             
-            // Fallback: análise básica do texto
+
             String fallback = analisarTextoBasico(texto);
             System.out.println("   ⚠️  Classificação por fallback: " + fallback + "\n");
             return fallback;
@@ -143,15 +143,15 @@ public class ClassificarFeedBack {
         
         String limpa = resposta.trim().toLowerCase();
         
-        // Remover caracteres especiais
+
         limpa = limpa.replaceAll("[^a-z]", " ");
         limpa = limpa.replaceAll("\\s+", " ");
         limpa = limpa.trim();
         
-        // Extrair primeira palavra
+
         String primeira = limpa.split("\\s+")[0];
         
-        // Verificar todas as possibilidades
+
         if (primeira.startsWith("posit") || limpa.contains("positive") || limpa.contains("positivo")) {
             return "positive";
         } else if (primeira.startsWith("negat") || limpa.contains("negative") || limpa.contains("negativo")) {
@@ -176,7 +176,7 @@ public class ClassificarFeedBack {
             }
         }
         
-        // Padrões negativos com negação
+
         String[] padroesNegativos = {
             "não gostei", "não recomendo", "não curti", "não achei", "não foi bom",
             "não vale", "não serve", "não funciona", "não atendeu"
@@ -188,7 +188,7 @@ public class ClassificarFeedBack {
             }
         }
         
-        // Contar palavras positivas vs negativas (considerando negações)
+
         int positivas = 0;
         int negativas = 0;
         
